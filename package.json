@@ -1,0 +1,25 @@
+{
+  "name": "openvos",
+  "module": "index.ts",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "001": "bun run --watch example/d001.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "prettier": "^3.5.3"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 4,
+    "semi": false,
+    "singleQuote": true
+  },
+  "dependencies": {
+    "pino": "^9.6.0"
+  }
+}
