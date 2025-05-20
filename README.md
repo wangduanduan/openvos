@@ -1,8 +1,10 @@
-# OpenVOS, like OpenSIPS、kamailio, but use JavaScirpt
+# OpenVOS, like OpenSIPS、kamailio, but fullly use JavaScirpt
 
 ## 概述
 
-OpenVos是基于开源的VoIP服务器软件OpenSIPS和kamailio开发的，使用JavaScript编写的VoIP服务器。它旨在提供一种灵活、可扩展的方式来构建和管理VoIP网络。通过利用JavaScript的优势，开发者可以更容易地实现复杂的业务逻辑和定制功能。
+OpenVOS是参考开源的VoIP服务器软件OpenSIPS和kamailio开发的，使用JavaScript编写的SIP服务器。
+
+它旨在提供一种灵活、可扩展的方式来构建和管理SIP网络。通过利用JavaScript的优势，开发者可以更容易地实现复杂的业务逻辑和定制功能。
 
 ### 主要特点：
 

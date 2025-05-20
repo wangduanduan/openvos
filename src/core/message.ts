@@ -8,11 +8,18 @@ export class msg extends EventEmitter {
     call_id = ''
     addr: vSocket
     readonly raw_buffer: Buffer
+
+    firstLine = ''
+    headers: { [key: string]: string[] } = {}
+    body: Buffer = Buffer.alloc(0)
+    parseError = false
+
     constructor(buf: Buffer, info: vSocket) {
         super()
         this.raw_buffer = buf
         this.addr = info
     }
+    baseParse() {}
     has_totag(): boolean {
         return true
     }
