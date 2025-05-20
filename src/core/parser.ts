@@ -32,16 +32,16 @@ export function getHeaderValue(
     return msg.slice(start, end).trim()
 }
 
-export function is_complete(msg: Buffer): boolean {
-    if (msg.subarray(-2).toString() !== CRLF) return false
+export function is_complete(msg: Buffer): number {
+    if (msg.subarray(-2).toString() !== CRLF) return -1
 
     let start = msg.indexOf(headerContentLength)
 
-    if (start === -1) return false
+    if (start === -1) return -1
 
     let end = msg.indexOf(CRLF, start + headerContentLength.length + 1)
 
-    if (end === -1) return false
+    if (end === -1) return -1
 
     const len = parseInt(
         msg
@@ -50,19 +50,22 @@ export function is_complete(msg: Buffer): boolean {
             .trim()
     )
 
-    if (len === 0) return true
+    if (len === 0) {
+        if (msg.indexOf(bodyFlag, end) === -1) return -1
+        return 0
+    }
 
     let bodyFlagIndex = msg.indexOf(bodyFlag, end)
 
-    if (bodyFlagIndex === -1) return false
+    if (bodyFlagIndex === -1) return -1
 
     const realBodyLen = msg.length - bodyFlagIndex - 4
 
     if (realBodyLen === len) {
-        return true
+        return len
     }
 
-    return false
+    return -1
 }
 
 interface baseMsg {
