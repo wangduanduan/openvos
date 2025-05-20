@@ -1,8 +1,27 @@
 export { logger } from './core/logger'
 export { msg } from './core/message'
-export { vosEvent } from './core/state'
-
+export { router } from './core/state'
 export { setCoreParams } from './core/params'
-export { listenUDP } from './core/proto_udp'
+
+import { listenUDP } from './core/proto_udp'
+import { getCoreParams } from './core/params'
+import { parseSocket } from './core/utils'
+import { logger } from './core/logger'
 
 // export const xlog = get_logger('xlog')
+
+export async function start() {
+    logger.debug('Starting...')
+
+    const sockets = getCoreParams('socket')
+
+    for (const socket of sockets) {
+        let so = parseSocket(socket)
+
+        switch (so.protocol) {
+            case 'udp':
+                await listenUDP(so.port, so.host)
+                break
+        }
+    }
+}

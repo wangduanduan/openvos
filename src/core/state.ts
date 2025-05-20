@@ -9,6 +9,6 @@ export interface vSocket {
     proto: string
 }
 
-export const vosEvent = new EventEmitter()
+export const router = new EventEmitter()
 export const udpServer: udp.Socket<'buffer'>[] = []
 export const socketBufferCacheMap = new Map<string, Buffer>()

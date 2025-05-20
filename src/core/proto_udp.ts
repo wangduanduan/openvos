@@ -1,10 +1,10 @@
 import { type udp } from 'bun'
 
-import { vosEvent } from './state'
+import { router } from './state'
 import { logger } from './logger'
 import { is_complete } from './parser'
 import { msg } from './message'
-import { coreParams } from './params'
+import { getCoreParams } from './params'
 
 // const logger = get_logger('proto_udp')
 const sc = new Map<string, Buffer>()
@@ -20,12 +20,12 @@ function onData(
 
     logger.info(`%s receive >>> %s`, remote_id, content)
 
-    if (buf.length < coreParams.minMsgLen!) {
+    if (buf.length < getCoreParams('minMsgLen')) {
         logger.warn('%s msg too small <<< %d', remote_id, buf.length)
         return
     }
 
-    if (buf.length > coreParams.maxMsgLen!) {
+    if (buf.length > getCoreParams('maxMsgLen')) {
         logger.warn('%s msg too big <<< %d', remote_id, buf.length)
         return
     }
@@ -45,7 +45,7 @@ function onData(
                 localPort: socket.address.port,
             })
 
-            vosEvent.emit('request', m)
+            router.emit('request', m)
             return
         }
 
@@ -64,7 +64,7 @@ function onData(
             localPort: socket.address.port,
         })
 
-        vosEvent.emit('request', m)
+        router.emit('request', m)
         return
     }
 
@@ -80,5 +80,6 @@ export async function listenUDP(port: number, ip: string = '127.0.0.1') {
             data: onData,
         },
     })
-    logger.info('listening on %s:%s:%s success', 'udp', ip, port)
+    logger.debug('listening on %s:%s:%s success', 'udp', ip, port)
+    router.emit('listening', 'udp', ip, port)
 }

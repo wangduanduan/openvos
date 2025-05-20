@@ -1,4 +1,4 @@
-# OpenVOS, like OpenSIPS、kamailio, but fullly use JavaScirpt
+# OpenVOS, like OpenSIPS、kamailio, but use JavaScirpt, WIP
 
 ## 概述
 

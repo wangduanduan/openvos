@@ -1,16 +1,9 @@
-import {
-    setCoreParams,
-    vosEvent,
-    listenUDP,
-    logger,
-    type msg,
-} from '../src/main'
+import { setCoreParams, router, logger, type msg, start } from '../src/main'
 
-setCoreParams({
-    logLevel: 'info',
-})
+setCoreParams('logLevel', 'debug')
+setCoreParams('socket', ['udp:127.0.0.1:5060', 'udp:127.0.0.1:5061'])
 
-vosEvent.on('request', (req: msg) => {
+router.on('request', (req: msg) => {
     logger.info(
         '[request route] received msg from %s:%s',
         req.addr.remoteIP,
@@ -20,4 +13,8 @@ vosEvent.on('request', (req: msg) => {
     return
 })
 
-await listenUDP(5060)
+router.on('listening', (proto, ip, port) => {
+    logger.info('[%s] listening on %s:%d', proto, ip, port)
+})
+
+await start()
