@@ -4,5 +4,5 @@ t1:
 
 push:
 	git add -A
-	git commit -am "update"
+	git commit -am "WIP"
 	git push
