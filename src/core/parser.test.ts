@@ -51,39 +51,39 @@ test('is_complete', () => {
     const mocks = [
         {
             input: 'GET / HTTP/1.1\r\nHost: example.com\r\n',
-            expected: false,
+            expected: -1,
         },
         {
             input: 'a: 1\r\nContent-Length: 6\r\n\r\n1234\r\n',
-            expected: true,
+            expected: 6,
         },
         {
             input: 'a: 1\r\nContent-Length: 4\r\n\r\n12345',
-            expected: false,
+            expected: -2,
         },
         {
             input: 'a: 1\r\nContent-Length: 4\r\n\r\n1234',
-            expected: false,
+            expected: -2,
         },
         {
             input: 'a: 1\r\nContent-Length: 5\r\n\r\n1234\r',
-            expected: false,
+            expected: -2,
         },
         {
             input: 'a: 1\r\nContent-Length: 0\r\n\r\n',
-            expected: true,
+            expected: 0,
         },
         {
             input: 'a: 1\r\nContent-Length: 0\r\nb:1\r\n\r\n',
-            expected: true,
+            expected: 0,
         },
         {
             input: 'a: 1\r\nContent-Length: 1\r\nb:1\r\n\r\n',
-            expected: false,
+            expected: -1,
         },
         {
             input: 'a: 1\r\nContent-Length: 3\r\nb:1\r\n\r\n1\r\n',
-            expected: true,
+            expected: 3,
         },
     ]
 

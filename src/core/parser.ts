@@ -33,7 +33,7 @@ export function getHeaderValue(
 }
 
 export function is_complete(msg: Buffer): number {
-    if (msg.subarray(-2).toString() !== CRLF) return -1
+    if (msg.subarray(-2).toString() !== CRLF) return -2
 
     let start = msg.indexOf(headerContentLength)
 

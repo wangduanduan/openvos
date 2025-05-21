@@ -26,14 +26,25 @@ function onData(
     }
 
     if (buf.length > getCoreParams('maxMsgLen')) {
-        logger.warn('%s msg too big <<< %d', remote_id, buf.length)
+        logger.warn('%s msg too big <<< %d, drop it', remote_id, buf.length)
         return
     }
 
     if (sc.has(remote_id)) {
         const newBuf = Buffer.concat([sc.get(remote_id)!, buf])
+        const bodyLen = is_complete(newBuf)
 
-        if (is_complete(newBuf)) {
+        if (newBuf.length > getCoreParams('maxMsgLen')) {
+            logger.warn(
+                '%s cache buf too big <<< %d, drop it',
+                remote_id,
+                newBuf.length
+            )
+            sc.delete(remote_id)
+            return
+        }
+
+        if (bodyLen >= 0) {
             sc.delete(remote_id)
             logger.debug('%s <<< %s', remote_id, newBuf.toString('utf8'))
 
@@ -45,6 +56,8 @@ function onData(
                 localPort: socket.address.port,
             })
 
+            // TODO: 基础解包
+
             router.emit('request', m)
             return
         }
@@ -53,7 +66,9 @@ function onData(
         return
     }
 
-    if (is_complete(buf)) {
+    // no cache buf, check if complete
+    const bodyLen = is_complete(buf)
+    if (bodyLen >= 0) {
         logger.debug('%s <<< %s', remote_id, buf.toString('utf8'))
 
         const m = new msg(buf, {
@@ -63,6 +78,8 @@ function onData(
             localIP: socket.address.address,
             localPort: socket.address.port,
         })
+
+        // TODO: 基础解包
 
         router.emit('request', m)
         return
