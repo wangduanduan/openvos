@@ -32,7 +32,7 @@ export function getHeaderValue(
     return msg.slice(start, end).trim()
 }
 
-export function is_complete(msg: Buffer): number {
+export function getBodyLen(msg: Buffer): number {
     if (msg.subarray(-2).toString() !== CRLF) return -2
 
     let start = msg.indexOf(headerContentLength)
@@ -70,55 +70,31 @@ export function is_complete(msg: Buffer): number {
 
 interface baseMsg {
     firstLine: string
-    headers: { [key: string]: string[] }
+    headers: string
     body?: Buffer
 }
 
-export function base_parse(msg: Buffer): baseMsg | undefined {
+export function baseParser(msg: Buffer, bodyLen: number): baseMsg | undefined {
     let start = msg.indexOf(CRLFBUF)
     if (start === -1) return
 
-    let firstLine = msg.subarray(0, start).toString()
-    let headers: { [key: string]: string[] } = {}
+    let firstLine = msg.subarray(0, start + 2).toString()
 
-    start = start + 2
-
-    while (true) {
-        let end = msg.indexOf(CRLFBUF, start)
-        if (end === -1) return
-
-        if (end === start + 2) {
-            // found body
-            let body = msg.subarray(end + 2)
-            return {
-                firstLine,
-                headers,
-                body,
-            }
+    if (bodyLen === 0) {
+        const headers = msg.subarray(start + 2, msg.length - 2).toString()
+        return {
+            firstLine,
+            headers
         }
+    }
 
-        if (end === msg.length - 2) {
-            // no body
-            return {
-                firstLine,
-                headers,
-            }
-        }
+    const headers = msg.subarray(start + 2, start + 2 + msg.length - bodyLen - firstLine.length - 2).toString()
 
-        // parse header
-        let header = msg.subarray(start, end).toString()
-        let headNameIndex = header.indexOf(':')
-        if (headNameIndex === -1) return
+    const body = msg.subarray(msg.length - bodyLen)
 
-        let name = header.substring(0, headNameIndex).trim()
-        let value = header.slice(headNameIndex + 1).trim()
-
-        if (!headers[name]) {
-            headers[name] = []
-        }
-        headers[name].push(value)
-
-        start = end + 2
-        if (start >= msg.length) return
+    return {
+        firstLine,
+        headers,
+        body
     }
 }

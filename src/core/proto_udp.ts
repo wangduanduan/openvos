@@ -2,7 +2,7 @@ import { type udp } from 'bun'
 
 import { router } from './state'
 import { logger } from './logger'
-import { is_complete } from './parser'
+import { getBodyLen } from './parser'
 import { msg } from './message'
 import { getCoreParams } from './params'
 
@@ -32,7 +32,7 @@ function onData(
 
     if (sc.has(remote_id)) {
         const newBuf = Buffer.concat([sc.get(remote_id)!, buf])
-        const bodyLen = is_complete(newBuf)
+        const bodyLen = getBodyLen(newBuf)
 
         if (newBuf.length > getCoreParams('maxMsgLen')) {
             logger.warn(
@@ -48,7 +48,7 @@ function onData(
             sc.delete(remote_id)
             logger.debug('%s <<< %s', remote_id, newBuf.toString('utf8'))
 
-            const m = new msg(newBuf, {
+            const m = new msg(newBuf, bodyLen, {
                 proto: 'udp',
                 remoteIP: ip,
                 remotePort: port,
@@ -67,11 +67,11 @@ function onData(
     }
 
     // no cache buf, check if complete
-    const bodyLen = is_complete(buf)
+    const bodyLen = getBodyLen(buf)
     if (bodyLen >= 0) {
         logger.debug('%s <<< %s', remote_id, buf.toString('utf8'))
 
-        const m = new msg(buf, {
+        const m = new msg(buf, bodyLen, {
             proto: 'udp',
             remoteIP: ip,
             remotePort: port,
