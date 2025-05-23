@@ -1,6 +1,6 @@
 export { logger } from './core/logger'
 export { msg } from './core/message'
-export { router } from './core/state'
+export { router } from './core/event_list'
 export { setCoreParams } from './core/params'
 
 import { listenUDP } from './core/proto_udp'

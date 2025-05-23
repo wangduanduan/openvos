@@ -1,52 +1,6 @@
 import { expect, test } from 'bun:test'
-import { getBodyLen, getHeaderValue, getHeaderRange, baseParser } from './parser'
+import { getBodyLen, baseParser } from './parser'
 import { buffer } from 'node:stream/consumers'
-
-test('getHeaderRange', () => {
-    const mocks = [
-        {
-            input: 'GET / HTTP/1.1\r\nHost: example.com\r\n',
-            header: 'Host',
-            expected: [16, 35],
-        },
-        {
-            input: 'a:b\r\nc:d\r\na:b\r\n',
-            header: 'a',
-            offset: 0,
-            expected: [0, 5],
-        },
-        {
-            input: 'a:b\r\nc:d\r\na:b\r\n',
-            header: 'a',
-            offset: 1,
-            expected: [10, 15],
-        },
-    ]
-    for (const { input, header, offset, expected } of mocks) {
-        expect(getHeaderRange(Buffer.from(input), header, offset)).toEqual(
-            expected as [number, number]
-        )
-    }
-})
-
-test('getHeaderValue', () => {
-    const mocks = [
-        {
-            input: 'GET / HTTP/1.1\r\nHost: example.com\r\n',
-            header: 'Host',
-            expected: 'example.com',
-        },
-        {
-            input: 'GET / HTTP/1.1\r\nHost: example.com\r\n',
-            header: 'Host',
-            expected: 'example.com',
-        },
-    ]
-
-    for (const { input, header, expected } of mocks) {
-        expect(getHeaderValue(input, header)).toBe(expected)
-    }
-})
 
 test('getBodyLen', () => {
     const mocks = [
@@ -116,9 +70,9 @@ test('baseParser', () => {
             expected: {
                 firstLine: 'GET / HTTP/1.1\r\n',
                 headers: 'Host: example.com\r\nContent-Length: 5\r\n',
-                body: Buffer.from('abc\r\n')
+                body: Buffer.from('abc\r\n'),
             },
-        }
+        },
     ]
 
     for (const { input, expected, bodyLen } of mocks) {

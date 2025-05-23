@@ -1,7 +1,9 @@
 import { EventEmitter } from 'node:events'
 import { type vSocket } from './state'
+import { baseParser } from './parser'
+import { router } from './event_list'
 
-export function onRequest() { }
+export function onRequest() {}
 
 export class msg extends EventEmitter {
     is_request = true
@@ -24,7 +26,20 @@ export class msg extends EventEmitter {
         this.baseParse()
     }
     baseParse() {
+        const info = baseParser(this.raw_buffer, this.bodyLen)
 
+        if (!info) {
+            this.parseError = true
+            router.emit('badMsg', this)
+            return
+        }
+
+        this.firstLine = info.firstLine
+        // this.headers = info.headers
+
+        if (this.bodyLen > 0) {
+            this.body = info.body!
+        }
     }
     has_totag(): boolean {
         return true
@@ -32,7 +47,7 @@ export class msg extends EventEmitter {
     is_method(method: string): boolean {
         return true
     }
-    reply(status: number, reason: string) { }
-    relay() { }
-    drop() { }
+    reply(status: number, reason: string) {}
+    relay() {}
+    drop() {}
 }

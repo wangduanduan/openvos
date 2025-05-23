@@ -13,6 +13,15 @@ router.on('request', (req: msg) => {
     return
 })
 
+router.on('badMsg', (req: msg) => {
+    logger.info('[badMsg route] received msg from %s:%s', req.addr.remoteIP, req.addr.remotePort)
+    req.reply(400, 'Bad Request')
+    return
+})
+
+router.on('error', (err: Error) => {
+    logger.error('[error route] %s', err.message)
+
 router.on('listening', (proto, ip, port) => {
     logger.info('[%s] listening on %s:%d', proto, ip, port)
 })

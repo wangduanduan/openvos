@@ -1,5 +1,6 @@
 import { EventEmitter } from 'node:events'
 import { type udp } from 'bun'
+import { Timer } from './timer'
 
 export interface vSocket {
     remoteIP: string
@@ -9,6 +10,6 @@ export interface vSocket {
     proto: string
 }
 
-export const router = new EventEmitter()
 export const udpServer: udp.Socket<'buffer'>[] = []
 export const socketBufferCacheMap = new Map<string, Buffer>()
+export const timer = new Timer()
