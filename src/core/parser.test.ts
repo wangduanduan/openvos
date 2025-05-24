@@ -1,6 +1,5 @@
 import { expect, test } from 'bun:test'
-import { getBodyLen, baseParser } from './parser'
-import { buffer } from 'node:stream/consumers'
+import { getBodyLen, baseParser, parseHeader, parseStartLine } from './parser'
 
 test('getBodyLen', () => {
     const mocks = [
@@ -77,5 +76,47 @@ test('baseParser', () => {
 
     for (const { input, expected, bodyLen } of mocks) {
         expect(baseParser(Buffer.from(input), bodyLen)).toEqual(expected)
+    }
+})
+
+test('parseHeader', () => {
+    const mocks = [
+        {
+            input: 'a: 1\r\nb: 2\r\nContent-Length: 6\r\n',
+            expected: {
+                'Accept-Contact': ['1'],
+                'Referred-By': ['2'],
+                'Content-Length': ['6'],
+            },
+        },
+        {
+            input: 'a1: 1\r\na2: 2\r\na3: 6\r\na2: 21\r\na2: 22,23,24\r\n',
+            expected: {
+                a1: ['1'],
+                a2: ['2', '21', '22', '23', '24'],
+                a3: ['6'],
+            },
+        },
+    ]
+
+    for (const { input, expected } of mocks) {
+        expect(parseHeader(input)).toEqual(expected as any)
+    }
+})
+
+test('parseStartLine', () => {
+    const mocks = [
+        {
+            input: 'INVITE sip:abc@a.com SIP/2.0\r\n',
+            expected: {
+                method: 'INVITE',
+                uri: 'sip:abc@a.com',
+                version: 'SIP/2.0',
+            },
+        },
+    ]
+
+    for (const { input, expected } of mocks) {
+        expect(parseStartLine(input)).toEqual(expected as any)
     }
 })

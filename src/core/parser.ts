@@ -1,3 +1,4 @@
+import { getHeaderName } from './headers'
 const headerContentLength = Buffer.from('Content-Length')
 const CRLF = '\r\n'
 const CRLFBUF = Buffer.from('\r\n')
@@ -76,32 +77,71 @@ interface RawHeader {
     [key: string]: string[]
 }
 
-export function parseHeader(header: string): [RawHeader, number] {
+export function parseHeader(header: string): RawHeader | undefined {
     const hs = header.split(CRLF)
 
-    if (hs.length === 0) return [{}, 1]
+    if (hs.length === 0) return
 
     const headers: RawHeader = {}
 
     for (const h of hs) {
         let [key, value] = h.split(':')
+
         if (!key || !value) {
             continue
         }
 
-        const oldKey = key.trim()
-        key = oldKey.toLocaleLowerCase()
-        value = value.trim()
-    }
-    return [{}, 0]
-}
+        const newH = getHeaderName(key.trim())
+        if (!headers[newH]) {
+            headers[newH] = []
+        }
 
-export function normalizeHeader(header: string): string {
-    let str = ''
-    for (const key in header) {
-        for (const value of header[key]) {
-            str += `${key}: ${value}\r\n`
+        value = value.trim()
+        let newValue = []
+
+        if (value.includes(',')) {
+            newValue = value.split(',').map((v) => v.trim())
+            headers[newH]?.push(...newValue)
+        } else {
+            headers[newH]?.push(value)
         }
     }
-    return str
+
+    return headers
+}
+
+interface reqStartLine {
+    method: string
+    uri: string
+    version: string
+}
+
+interface resStartLine {
+    version: string
+    status: string
+    reason: string
+}
+
+export function parseStartLine(
+    line: string
+): reqStartLine | resStartLine | undefined {
+    const [e1, e2, ...d3] = line.split(' ')
+
+    if (e1 === undefined || e2 === undefined) {
+        return
+    }
+
+    if (e1 === 'SIP/2.0') {
+        return {
+            version: e1,
+            status: e2,
+            reason: d3.join(' '),
+        }
+    }
+
+    return {
+        method: e1,
+        uri: e2,
+        version: d3.join(' '),
+    }
 }

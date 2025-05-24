@@ -1,4 +1,6 @@
-export const HF = {
+export const HF: {
+    [key: string]: string | undefined
+} = {
     accept: 'Accept',
     'accept-contact': 'Accept-Contact',
     a: 'Accept-Contact',
@@ -64,6 +66,13 @@ export const HF = {
     b: 'Referred-By',
     'Reject-Contact': 'Reject-Contact',
     j: 'Reject-Contact',
+}
+
+export function getHeaderName(header: string): string {
+    const h = header.toLocaleLowerCase()
+    if (HF[h]) {
+        return HF[h]
+    } else return header
 }
 
 export const statusDesc = {
