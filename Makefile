@@ -6,3 +6,7 @@ push:
 	git add -A
 	git commit -am "WIP"
 	git push
+
+.PHONY: test
+test:
+	bun test

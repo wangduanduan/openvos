@@ -1,11 +1,16 @@
 import { expect, test } from 'bun:test'
-import { getBodyLen, baseParser, parseHeader, parseStartLine } from './parser'
+import {
+    getBodyLen,
+    baseParser,
+    parseHeader,
+    parseStartLine,
+} from '../src/core/parser'
 
 test('getBodyLen', () => {
     const mocks = [
         {
             input: 'GET / HTTP/1.1\r\nHost: example.com\r\n',
-            expected: -1,
+            expected: -2,
         },
         {
             input: 'a: 1\r\nContent-Length: 6\r\n\r\n1234\r\n',
@@ -13,15 +18,15 @@ test('getBodyLen', () => {
         },
         {
             input: 'a: 1\r\nContent-Length: 4\r\n\r\n12345',
-            expected: -2,
+            expected: -1,
         },
         {
             input: 'a: 1\r\nContent-Length: 4\r\n\r\n1234',
-            expected: -2,
+            expected: -1,
         },
         {
             input: 'a: 1\r\nContent-Length: 5\r\n\r\n1234\r',
-            expected: -2,
+            expected: -1,
         },
         {
             input: 'a: 1\r\nContent-Length: 0\r\n\r\n',
@@ -33,7 +38,7 @@ test('getBodyLen', () => {
         },
         {
             input: 'a: 1\r\nContent-Length: 1\r\nb:1\r\n\r\n',
-            expected: -1,
+            expected: -100,
         },
         {
             input: 'a: 1\r\nContent-Length: 3\r\nb:1\r\n\r\n1\r\n',
@@ -48,7 +53,7 @@ test('getBodyLen', () => {
     // expect(is_complete(Buffer.from(mocks[4]!.input))).toBe(mocks[4]!.expected)
 
     for (const { input, expected } of mocks) {
-        console.log(input)
+        // console.log(input)
         expect(getBodyLen(Buffer.from(input))).toBe(expected)
     }
 })

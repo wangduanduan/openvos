@@ -5,15 +5,15 @@ const CRLFBUF = Buffer.from('\r\n')
 const bodyFlag = Buffer.from(CRLF + CRLF)
 
 export function getBodyLen(msg: Buffer): number {
-    if (msg.subarray(-2).toString() !== CRLF) return -2
+    if (msg.subarray(-2).toString() !== CRLF) return -1
 
     let start = msg.indexOf(headerContentLength)
 
-    if (start === -1) return -1
+    if (start === -1) return -2
 
     let end = msg.indexOf(CRLF, start + headerContentLength.length + 1)
 
-    if (end === -1) return -1
+    if (end === -1) return -3
 
     const len = parseInt(
         msg
@@ -29,15 +29,17 @@ export function getBodyLen(msg: Buffer): number {
 
     let bodyFlagIndex = msg.indexOf(bodyFlag, end)
 
-    if (bodyFlagIndex === -1) return -1
+    if (bodyFlagIndex === -1) return -4
 
     const realBodyLen = msg.length - bodyFlagIndex - 4
+
+    // console.log(msg.length, len, bodyFlagIndex, realBodyLen)
 
     if (realBodyLen === len) {
         return len
     }
 
-    return -1
+    return -100
 }
 
 interface baseMsg {
@@ -118,13 +120,19 @@ interface reqStartLine {
 
 interface resStartLine {
     version: string
-    status: string
+    status: number
     reason: string
 }
 
 export function parseStartLine(
     line: string
 ): reqStartLine | resStartLine | undefined {
+    const end = line.indexOf(CRLF)
+
+    if (end >= 0) {
+        line = line.substring(0, end)
+    }
+
     const [e1, e2, ...d3] = line.split(' ')
 
     if (e1 === undefined || e2 === undefined) {
@@ -132,9 +140,23 @@ export function parseStartLine(
     }
 
     if (e1 === 'SIP/2.0') {
+        if (e2.length !== 3) {
+            return
+        }
+
+        const status = parseInt(e2)
+
+        if (isNaN(status)) {
+            return
+        }
+
+        if (status < 100 || status > 699) {
+            return
+        }
+
         return {
             version: e1,
-            status: e2,
+            status: status,
             reason: d3.join(' '),
         }
     }

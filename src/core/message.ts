@@ -1,17 +1,23 @@
 import { EventEmitter } from 'node:events'
 import { type vSocket } from './state'
-import { baseParser } from './parser'
+import { baseParser, parseStartLine, parseHeader } from './parser'
 import { router } from './event_list'
 
 export function onRequest() {}
 
-export class msg extends EventEmitter {
-    is_request = true
-    call_id = ''
+export class Msg extends EventEmitter {
+    isRequest = true
+    callID = ''
     addr: vSocket
     readonly raw_buffer: Buffer
 
     firstLine = ''
+    version = ''
+    method = ''
+    uri = ''
+    status = 0
+    reason = ''
+
     headers: { [key: string]: string[] } = {}
     body: Buffer = Buffer.alloc(0)
     bodyLen = 0
@@ -36,10 +42,47 @@ export class msg extends EventEmitter {
 
         this.firstLine = info.firstLine
         // this.headers = info.headers
+        const fl = parseStartLine(this.firstLine)
+
+        if (!fl) {
+            this.parseError = true
+            router.emit('badMsg', this)
+            return
+        }
+
+        if ('status' in fl) {
+            this.isRequest = false
+            this.version = fl.version
+            this.status = fl.status
+            this.reason = fl.reason
+        } else {
+            this.isRequest = true
+            this.version = fl.version
+            this.uri = fl.uri
+            this.method = fl.method
+        }
 
         if (this.bodyLen > 0) {
             this.body = info.body!
         }
+
+        const hf = parseHeader(info.headers)
+        if (!hf) {
+            console.log('headers parse error')
+            this.parseError = true
+            router.emit('badMsg', this)
+            return
+        }
+
+        if ('Call-ID' in hf && hf['Call-ID'].length === 1) {
+            this.callID = hf['Call-ID'][0]!
+        } else {
+            this.parseError = true
+            router.emit('badMsg', this)
+            return
+        }
+
+        this.headers = hf
     }
     has_totag(): boolean {
         return true
