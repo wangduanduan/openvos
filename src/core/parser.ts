@@ -1,5 +1,9 @@
 import { getHeaderName } from './headers'
 const headerContentLength = Buffer.from('Content-Length')
+
+// 13	0D	CR (Carriage Return)	回车键
+// 10	0A	LF/NL(Line Feed/New Line)	换行键
+
 const CRLF = '\r\n'
 const CRLFBUF = Buffer.from('\r\n')
 const bodyFlag = Buffer.from(CRLF + CRLF)

@@ -21,7 +21,7 @@ export class Msg extends EventEmitter {
     headers: { [key: string]: string[] } = {}
     body: Buffer = Buffer.alloc(0)
     bodyLen = 0
-    parseError = false
+    parseError = true
 
     constructor(buf: Buffer, bodyLen: number, info: vSocket) {
         super()
@@ -29,13 +29,17 @@ export class Msg extends EventEmitter {
         this.addr = info
         this.bodyLen = bodyLen
 
+        if (bodyLen < 0) {
+            router.emit('badMsg', this)
+            return
+        }
+
         this.baseParse()
     }
     baseParse() {
         const info = baseParser(this.raw_buffer, this.bodyLen)
 
         if (!info) {
-            this.parseError = true
             router.emit('badMsg', this)
             return
         }
@@ -45,7 +49,6 @@ export class Msg extends EventEmitter {
         const fl = parseStartLine(this.firstLine)
 
         if (!fl) {
-            this.parseError = true
             router.emit('badMsg', this)
             return
         }
@@ -68,8 +71,6 @@ export class Msg extends EventEmitter {
 
         const hf = parseHeader(info.headers)
         if (!hf) {
-            console.log('headers parse error')
-            this.parseError = true
             router.emit('badMsg', this)
             return
         }
@@ -77,11 +78,11 @@ export class Msg extends EventEmitter {
         if ('Call-ID' in hf && hf['Call-ID'].length === 1) {
             this.callID = hf['Call-ID'][0]!
         } else {
-            this.parseError = true
             router.emit('badMsg', this)
             return
         }
 
+        this.parseError = false
         this.headers = hf
     }
     has_totag(): boolean {
