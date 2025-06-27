@@ -1,6 +1,6 @@
 import { EventEmitter } from 'node:events'
 
-type EventsList = 'request' | 'badMsg' | 'error' | 'listening' | 'tcpClosed'
+type EventsList = 'initRequest' | 'seqRequest' | 'badMsg' | 'error' | 'listening' | 'tcpClosed'
 
 class EventList extends EventEmitter {
     constructor() {

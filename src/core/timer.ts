@@ -53,7 +53,7 @@ function checkTimer() {
     }
 }
 
-export function initTimer(tick: number, maxRunTask: number) {
+export function initTimer(tick: number | undefined, maxRunTask: number | undefined) {
     state.tick = tick ?? state.tick
     state.maxRunTask = maxRunTask ?? state.maxRunTask
 }

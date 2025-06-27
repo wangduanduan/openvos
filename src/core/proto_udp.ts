@@ -1,9 +1,9 @@
 import { type udp } from 'bun'
 
-import { router } from './state'
+import { router } from './event_list'
 import { logger } from './logger'
 import { getBodyLen } from './parser'
-import { msg } from './message'
+import { Msg } from './message'
 import { getCoreParams } from './params'
 
 // const logger = get_logger('proto_udp')
@@ -48,7 +48,7 @@ function onData(
             sc.delete(remote_id)
             logger.debug('%s <<< %s', remote_id, newBuf.toString('utf8'))
 
-            const m = new msg(newBuf, bodyLen, {
+            const m = new Msg(newBuf, bodyLen, {
                 proto: 'udp',
                 remoteIP: ip,
                 remotePort: port,
@@ -71,7 +71,7 @@ function onData(
     if (bodyLen >= 0) {
         logger.debug('%s <<< %s', remote_id, buf.toString('utf8'))
 
-        const m = new msg(buf, bodyLen, {
+        const m = new Msg(buf, bodyLen, {
             proto: 'udp',
             remoteIP: ip,
             remotePort: port,

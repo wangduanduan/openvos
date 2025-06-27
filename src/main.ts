@@ -1,5 +1,5 @@
 export { logger } from './core/logger'
-export { msg } from './core/message'
+export { Msg } from './core/message'
 export { router } from './core/event_list'
 export { setCoreParams } from './core/params'
 

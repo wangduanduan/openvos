@@ -1,9 +1,9 @@
-import { setCoreParams, router, logger, type msg, start } from '../src/main'
+import { setCoreParams, router, logger, type Msg, start } from '../src/main'
 
 setCoreParams('logLevel', 'debug')
 setCoreParams('socket', ['udp:127.0.0.1:5060', 'udp:127.0.0.1:5061'])
 
-router.on('request', (req: msg) => {
+router.on('initRequest', (req: Msg) => {
     logger.info(
         '[request route] received msg from %s:%s',
         req.addr.remoteIP,
@@ -13,7 +13,17 @@ router.on('request', (req: msg) => {
     return
 })
 
-router.on('badMsg', (req: msg) => {
+router.on('seqRequest', (req: Msg) => {
+    logger.info(
+        '[request route] received msg from %s:%s',
+        req.addr.remoteIP,
+        req.addr.remotePort
+    )
+    req.reply(200, 'OK') // 响应
+    return
+})
+
+router.on('badMsg', (req: Msg) => {
     logger.info(
         '[badMsg route] received msg from %s:%s',
         req.addr.remoteIP,

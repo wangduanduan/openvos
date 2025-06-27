@@ -1,5 +1,5 @@
 import { set_logger_level } from './logger'
-import { timer } from './state'
+import { initTimer } from './timer'
 
 export interface Params {
     logLevel: string
@@ -23,8 +23,8 @@ const coreParams: Params = {
     socket: ['udp:127.0.0.1:5060', 'udp:localhost:5060'],
     tcpMaxConnections: 2048,
     userAgentHeader: 'User-Agent: OpenVOS',
-    timerIntervalMs: timer.intervalMs,
-    cbLimit: timer.cbLimit,
+    timerIntervalMs: 10,
+    cbLimit: 1000,
 }
 
 export function getCoreParams<T extends keyof Params>(k: T): Params[T] {
@@ -44,10 +44,10 @@ export function setCoreParams<T extends keyof Params>(
             set_logger_level(coreParams.logLevel)
             break
         case 'timerIntervalMs':
-            timer.intervalMs = coreParams.timerIntervalMs
+            initTimer(coreParams.timerIntervalMs, undefined)
             break
         case 'cbLimit':
-            timer.cbLimit = coreParams.cbLimit
+            initTimer(undefined, coreParams.cbLimit)
             break
         default:
             break
