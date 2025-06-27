@@ -1,66 +1,78 @@
-type TimerCb = (packetId: string) => void
+import TinyQueue from 'tinyqueue'
+import { randomUUIDv7 } from 'bun'
 
-export class Timer {
-    packets: Map<string, { expireAt: number; cb: TimerCb }>
-    interval: NodeJS.Timeout
-    intervalMs: number
-    isChecking: boolean
-    cbLimit: number
+let timerID: NodeJS.Timeout | null = null
 
-    constructor() {
-        this.packets = new Map()
-        this.interval = null!
-        this.intervalMs = 100
-        this.isChecking = false
-        this.cbLimit = 500
+const state = {
+    tick: 10, // ms
+    maxRunTask: 1000,
+}
+
+interface task {
+    expire: number
+    cb: Function
+    ticket: string
+}
+
+const ticketSet = new Set<string>()
+const queue = new TinyQueue<task>([], function (a, b) {
+    return a.expire - b.expire
+})
+
+export function addTimer(cb: Function, delayMs: number): string {
+    if (timerID === null) {
+        timerID = setInterval(checkTimer, state.tick)
     }
 
-    add(packetId: string, timeoutMs: number, cb: TimerCb) {
-        const expireAt = Date.now() + timeoutMs
-        this.packets.set(packetId, { expireAt, cb })
+    const ticket = randomUUIDv7()
+    ticketSet.add(ticket)
+    queue.push({ expire: Date.now() + delayMs, cb, ticket })
+    return ticket
+}
 
-        if (!this.interval) {
-            this.interval = setInterval(() => this.check(), this.intervalMs)
-        }
+export function removeTimer(ticket: string) {
+    ticketSet.delete(ticket)
+}
+
+function checkTimer() {
+    if (queue.length === 0 && timerID !== null) {
+        clearInterval(timerID)
+        timerID = null
+        return
     }
 
-    remove(packetId: string) {
-        this.packets.delete(packetId)
-        this.checkPacketSizeAndRemoveTimeout()
-    }
-
-    checkPacketSizeAndRemoveTimeout(): boolean {
-        if (this.packets.size === 0 && this.interval) {
-            clearInterval(this.interval)
-            this.interval = null!
-            return true
+    const now = Date.now()
+    let i = 0
+    while (queue.length > 0 && queue.peek()!.expire <= now) {
+        const task = queue.pop()
+        if (ticketSet.has(task!.ticket)) {
+            task!.cb()
+            i++
+            if (i > state.maxRunTask) break
         }
-        return false
-    }
-
-    check() {
-        if (this.checkPacketSizeAndRemoveTimeout()) {
-            return
-        }
-
-        if (this.isChecking) {
-            return
-        }
-
-        this.isChecking = true
-
-        const now = Date.now()
-
-        let i = 0
-        for (const [packetId, { expireAt, cb }] of this.packets.entries()) {
-            if (now >= expireAt) {
-                cb(packetId)
-                this.remove(packetId)
-                i++
-                if (i > this.cbLimit) break
-            }
-        }
-
-        this.isChecking = false
     }
 }
+
+export function initTimer(tick: number, maxRunTask: number) {
+    state.tick = tick ?? state.tick
+    state.maxRunTask = maxRunTask ?? state.maxRunTask
+}
+
+// function main() {
+//     initTimer(20, 500)
+
+//     let t1 = addTimer(() => {
+//         console.log('this is 1000 ms')
+//     }, 1000)
+
+//     let t2 = addTimer(() => {
+//         console.log('this is 500 ms')
+//         removeTimer(t1)
+//     }, 500)
+
+//     let t3 = addTimer(() => {
+//         console.log('this is 5000 ms')
+//     }, 5000)
+// }
+
+// main()

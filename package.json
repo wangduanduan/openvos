@@ -20,7 +20,8 @@
     "singleQuote": true
   },
   "dependencies": {
-    "pino": "^9.7.0"
+    "pino": "^9.7.0",
+    "tinyqueue": "^3.0.0"
   },
   "private": true
 }
